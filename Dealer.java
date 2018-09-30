@@ -19,6 +19,7 @@ public class Dealer extends Person {
      * dealt
      */
     public void printCards() {
+        System.out.println("Dealer's Cards: ");
         for (int i = 2;i < hand.size(); i++) {
             System.out.println(hand.get(i).toString());
 
@@ -30,7 +31,7 @@ public class Dealer extends Person {
      * Tells the dealer he bust and that the player won via dialog
      */
     public void Bust() {
-        System.out.println("Dealer Bust!\n\n");
+        System.out.printf("Dealer BUST with %d\n\n", sum);
         System.out.println("You Won!\n");
 
     }
@@ -49,6 +50,14 @@ public class Dealer extends Person {
         if (playerSum == 21) {
             //go for it
             return 1;
+        }
+
+        if (dealerSum > 21 && hand.contains(Main.h14)
+            || hand.contains(Main.d14) || hand.contains(Main.s14)
+            || hand.contains(Main.c14)) {
+
+            dealerSum -= 10;
+            sum -=10;
         }
         //Common Strategies
         if (playerSum >= 7 && playerSum <= 11 && (dealerSum == 8 ||
