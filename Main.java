@@ -3,7 +3,11 @@ import java.util.Scanner;
 import java.util.Collections;
 import java.util.ArrayList;
 
-
+/**
+ * Main blackjack game runs from here. There is no doubling or splitting.
+ * The only options are to hit and stand. Whoever has 21 first wins and
+ * whoever busts first will cause the other player to Win.
+ */
 public class Main {
 
 
@@ -71,7 +75,7 @@ public class Main {
 
         //Setup
         ArrayList<Card> deck = new ArrayList<>();
-        Card[] deckOfCards = {h1, h2, h3, h4, h5, h6, h7, h8, h9, h10,
+        final Card[] deckOfCards = {h1, h2, h3, h4, h5, h6, h7, h8, h9, h10,
             h11, h12, h13, h14, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11,
             d12, d13, d14, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13,
             c14, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14};
@@ -85,12 +89,13 @@ public class Main {
         System.out.println("Are you ready to play Black Jack? (Y/N)");
         String answer = sc.nextLine();
         if (answer == "N") {
-            System.exit(0);
+            endGame();
         }
+        System.out.println("------STARTING NEW GAME OF BLACK JACK------");
 
         //start playing
         System.out.println("Your goal is to beat the dealer or hit 21");
-        System.out.println("Dealing cards to Dealer...");
+        System.out.println("Dealing cards to player...");
         Collections.shuffle(deck); // shuffling the deck
         //remove four cards from deck
         Card c1 = deck.remove(deck.size() - 1);
@@ -114,14 +119,106 @@ public class Main {
         System.out.println();
         System.out.println();
 
-        while (player.sum <= 21 && dealer.sum <= 21) {
+        //Check for automatic 21
+        if (player.sum == 21 && dealer.sum != 21) {
+            System.out.println("YOU got 21! You WIN!\n");
+            endGame();
+
+        } else if (dealer.sum == 21 && player.sum != 21) {
+            System.out.println("DEALER got 21! You LOSE!\n");
+            endGame();
+        }
+
+        //Main game
+        while (player.sum < 21 && dealer.sum < 21) {
+            //player goes first and then dealer
+            hitOrStand(player, deck);
+
+
+            int dealerDecision = ((Dealer)dealer).decide(player.visibleSum, dealer.sum);
+            if (dealerDecision == 1) {
+                System.out.println("Dealer HIT\n");
+                Card dealerNewCard = deck.remove(deck.size() - 1);
+                dealer.hit(dealerNewCard);
+            } else {
+                System.out.println("DEALER did not HIT\n");
+
+            }
+            player.printCards();
+            if (player.sum > 21) {
+                player.Bust();
+                endGame();
+            }
+
+            dealer.printCards();
+            if (dealer.sum > 21) {
+                dealer.Bust();
+                endGame();
+            }
+            if (player.status == 0 && dealer.status == 0) {
+                break;
+            }
+        }
+
+        if (player.sum == 21 && dealer.sum != 21) {
+            System.out.println("YOU got 21!\n");
+            endGame();
+        } else if (dealer.sum == 21 && player.sum != 21) {
+            System.out.println("DEALER got 21! You lose!\n");
+            endGame();
+        } else {
+            System.out.println("Nobody got 21 but ");
+            if (dealer.sum > player.sum) {
+                System.out.printf("DEALER WON with %d\n", dealer.sum);
+                endGame();
+            } else if (player.sum > dealer.sum) {
+                System.out.printf("YOU WON with %d beating dealer's %d\n", player.sum, dealer.sum);
+                endGame();
+            } else {
+                System.out.printf("DRAW! both you and dealer had %d", dealer.sum);
+            }
 
         }
 
     }
 
-    public void hitOrStand() {
-        System.out.println("Hit or Stand? (H/S)");
+
+    /**
+     * Gives the player the option to hit or stand
+     * @param player   [the player playing via the terminal]
+     * @param cardDeck [the shuffled deck of cards]
+     */
+    public static void hitOrStand(Person player, ArrayList<Card> cardDeck) {
+
+
+        Scanner sc = new Scanner(System.in);
+        String playerAns = "null";
+        while (!playerAns.equals("H") && !playerAns.equals("S")) {
+            System.out.println("Hit or Stand? (H/S)");
+            playerAns = sc.nextLine();
+            if (playerAns.equals("H")) {
+                System.out.println("You chose HIT\n");
+                Card newCard = cardDeck.remove(cardDeck.size() - 1);
+                player.hit(newCard);
+                player.status = 1;
+            } else if (playerAns.equals("S")) {
+                System.out.println("You chose STAND\n");
+                player.status = 0;
+            }
+        }
+        System.out.println("--------------------------------");
+
 
     }
+
+
+    /**
+     * ends the game with a small dialog and then exit
+     */
+    public static void endGame() {
+        System.out.println("Exiting Game...");
+        System.exit(0);
+    }
+
+
 }
